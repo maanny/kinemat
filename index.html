@@ -1,6 +1,8 @@
 <html>
     <head>
-        <title>Arm Kinematics</title>
+        <title>Arm Game</title>
+
+        <meta name="mobile-web-app-capable" content="yes">
 
         <link href='http://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
         <link rel="stylesheet" type="text/css" href="style.css">
@@ -136,12 +138,19 @@
                 xText.content = "x: " + xThrottle;
                 yText.content = "y: " + yThrottle;
             }
+
+            function onResize(event) {
+                joyCenter = new Point(110, view.size.height - 110);
+                joyBounds.position = bulbShadow.position = joySetpoint = joyCenter;
+                xText.position = new Point(joyCenter.x + boundsRadius + 10, joyCenter.y - boundsRadius);
+                yText.position = new Point(joyCenter.x + boundsRadius + 10, joyCenter.y - boundsRadius + 20);
+            }
         </script>
     </head>
 
     <body>
         <div align="center">
-            <h1 id="title">Devlab Arm Kinematics</h1>
+            <h1 id="title">Arm Game</h1>
             <canvas keepAlive="true" resize="true" id="kinematics"></canvas>
         </div>
     </body>
