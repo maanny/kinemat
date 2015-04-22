@@ -1,0 +1,148 @@
+<html>
+    <head>
+        <title>Arm Kinematics</title>
+
+        <link href='http://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="style.css">
+
+        <script type="text/javascript" src="js/paper.js"></script>
+        <script type="text/paperscript" canvas="kinematics">
+            // var p = new Path({
+            //    segments: [[0, 0], [120, 180], [250, 20]],
+            //    selected: true
+            // });
+            //
+            // p.strokeColor = 'red';
+            // p.strokeWidth = 10;
+            // p.strokeJoin = p.strokeCap = 'round';
+            //
+            // // function onFrame(event) {
+            // //     p.rotate(1);
+            // // }
+            //
+            // function onKeyDown(event) {
+            // 	if(event.key == 'a') {
+            // 		p.rotate(-10);
+            // 	}
+            //
+            // 	if(event.key == 'd') {
+            // 		p.x++;
+            // 	}
+            // }
+
+
+
+            // var segLen = 100;
+            //
+            // var shoulder = new Point(view.size / 2, 100);
+            // var elbow = new Point(shoulder.x, shoulder.y + segLen);
+            // var wrist = new Point(elbow.x, elbow.y + segLen);
+            //
+            // var s1 = new PointText({
+            // 	point: elbow,
+            // 	justification: 'left',
+            // 	fontSize: 30,
+            // 	fillColor: 'blue'
+            // });
+            //
+            // var s2 = new PointText({
+            //     point: wrist,
+            //     justification: 'left',
+            //     fontSize: 30,
+            //     fillColor: 'blue'
+            // });
+            //
+            // var arm = new Path();
+            // arm.add(shoulder);
+            // arm.add(elbow);
+            // arm.add(wrist);
+            //
+            // arm.strokeColor = 'red';
+            // arm.strokeWidth = 10;
+            // arm.strokeJoin = arm.strokeCap = 'round';
+            // arm.selected = true;
+            //
+            // function onMouseMove(event) {
+            //     if((arm.firstSegment.point.getDistance(event.point) < segLen*2) &&
+            //     (event.point.y > arm.firstSegment.point.y)) {
+            //         arm.lastSegment.point = event.point;
+            //     }
+            //
+            //     s1.content = "elbow: " + Math.round(arm.firstSegment.point.getDistance(arm.segments[1].point));
+            //     s1.content = "wrist: " + Math.round(arm.firstSegment.point.getDistance(arm.segments[2].point));
+            // }
+
+            //var joyCenter = new Point(view.size.width / 2, 200);
+            var joyCenter = new Point(110, view.size.height - 110);
+
+            var joySetpoint = new Point(joyCenter);
+
+            var boundsRadius = 80;
+
+            var joyBounds = new Path.Circle({
+                center: joyCenter,
+                radius: boundsRadius,
+                strokeColor: 0.8,
+                strokeWidth: 5,
+                dashArray: [10,4]
+            });
+
+            var bulbShadow = new Path.Circle({
+                center: joyCenter,
+                radius: 10,
+                fillColor: 0.8
+            });
+
+            var bulb = new Path.Circle({
+                center: joyCenter,
+                radius: 10,
+            	fillColor: 'red'
+            });
+
+            var xText = new PointText({
+                point: [joyCenter.x + boundsRadius + 10,
+                        joyCenter.y - boundsRadius],
+                fontSize: 20,
+                fillColor: 0.8
+            })
+
+            var yText = new PointText({
+                point: [joyCenter.x + boundsRadius + 10,
+                        joyCenter.y - boundsRadius + 20],
+                fontSize: 20,
+                fillColor: 0.8
+            })
+
+            function onMouseDrag(event) {
+                if(joyBounds.contains(event.point)) {
+                    joySetpoint = event.point;
+                } else {
+                    joySetpoint = joyCenter;
+                }
+            }
+
+            function onMouseUp(event) {
+                joySetpoint = joyCenter;
+            }
+
+            function onFrame(event) {
+            	var vector = joySetpoint - bulb.position;
+                var delta = joyCenter - bulb.position;
+            	bulb.position += vector / 5;
+
+                var xThrottle = -Math.round(delta.x / boundsRadius * 100);
+                var yThrottle = Math.round(delta.y / boundsRadius * 100);
+
+                xText.content = "x: " + xThrottle;
+                yText.content = "y: " + yThrottle;
+            }
+        </script>
+    </head>
+
+    <body>
+        <div align="center">
+            <h1 id="title">Devlab Arm Kinematics</h1>
+            <canvas keepAlive="true" resize="true" id="kinematics"></canvas>
+        </div>
+    </body>
+</html>
