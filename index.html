@@ -92,16 +92,19 @@
         function onMouseDrag(event) {
             XYpos.drag(event.point);
             Zpos.drag(event.point);
+            rot.drag(event.point);
         }
 
         function onMouseUp(event) {
             XYpos.mouseUp(event.point);
             Zpos.mouseUp(event.point);
+            rot.mouseUp(event.point);
         }
 
         function onFrame(event) {
             XYpos.frame(event.point);
             Zpos.frame(event.point);
+            rot.frame(event.point);
         }
 
         </script>
