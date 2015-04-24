@@ -74,7 +74,7 @@
             //     s1.content = "wrist: " + Math.round(arm.firstSegment.point.getDistance(arm.segments[2].point));
             // }
 
-            //var joyCenter = new Point(view.size.width / 2, 200);
+            //--------------------Joystick parts-------------------
             var joyCenter = new Point(110, view.size.height - 110);
 
             var joySetpoint = new Point(joyCenter);
@@ -106,14 +106,20 @@
                         joyCenter.y - boundsRadius],
                 fontSize: 20,
                 fillColor: 0.8
-            })
+            });
 
             var yText = new PointText({
                 point: [joyCenter.x + boundsRadius + 10,
                         joyCenter.y - boundsRadius + 20],
                 fontSize: 20,
                 fillColor: 0.8
-            })
+            });
+
+            var dot = new Path.Circle({
+                center: view.size/2,
+                radius: 10,
+                fillColor: '#33B5E5'
+            });
 
             function onMouseDrag(event) {
                 if(joyBounds.contains(event.point)) {
@@ -137,6 +143,9 @@
 
                 xText.content = "x: " + xThrottle;
                 yText.content = "y: " + yThrottle;
+
+                //moving the thingy
+                dot.position -= delta/5;
             }
 
             function onResize(event) {
@@ -150,7 +159,7 @@
 
     <body>
         <div align="center">
-            <h1 id="title">Arm Game</h1>
+            <!-- <h1 id="title">Arm Game</h1> -->
             <canvas keepAlive="true" resize="true" id="kinematics"></canvas>
         </div>
     </body>
