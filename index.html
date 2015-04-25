@@ -109,7 +109,7 @@
 
         var bg = new Layer();
 
-        var shoulder = new Point(view.center.x, view.size.height/4);
+        var shoulder = new Point(view.center.x, view.size.height/20);
 
         var range = new Path.Circle({
             center: shoulder,
@@ -124,7 +124,7 @@
         range.segments[1].handleIn = [-segLen,0];
 
         var dotA = new Path.Circle({
-            center: view.size/2,
+            center: range.bounds.center,
             radius: 10,
             fillColor: '#AA66CC',
             // opacity: 0.5
