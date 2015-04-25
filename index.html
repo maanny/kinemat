@@ -1,9 +1,11 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Arm Game</title>
 
-        <meta name="mobile-web-app-capable" content="yes">
+        <footer><small>Copyright Manny Barros, 2015</small></footer>
 
+        <meta name="mobile-web-app-capable" content="yes">
         <!-- <link href='http://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'> -->
         <link rel="stylesheet" type="text/css" href="style.css">
 
@@ -34,7 +36,7 @@
                 fillColor: 0.8
             });
 
-            //Changing graphical elements
+            //Drawing changing graphical elements
             var bulb = new Path.Circle({
                 center: pos,
                 radius: 10,
@@ -55,6 +57,7 @@
                 fillColor: 0.8
             });
 
+            //Getters and setters
             this.getX = function() {
                 var delta = this.pos - bulb.position;
                 return -Math.round(delta.x / this.radius * 100);
@@ -69,9 +72,19 @@
                 return this.pos - bulb.position;
             };
 
+            //Event handling workaround
             this.drag = function(point) {
+                var extendedBounds = new Path.Circle(this.pos, this.radius + 50);
+
                 if(bounds.contains(point)) {
                     this.setPt = point;
+                } else if(extendedBounds.contains(point)) {
+                    var theta = Math.atan2(point.x-this.pos.x,this.pos.y-point.y);
+                    var radPoint = new Point({
+                        x: this.pos.x + this.radius*Math.sin(theta),
+                        y: this.pos.y - this.radius*Math.cos(theta)
+                    });
+                    this.setPt = radPoint;
                 } else {
                     this.setPt = this.pos;
                 }
@@ -92,18 +105,29 @@
         var XYpos = new Joystick(new Point(110, view.size.height - 110), 80, '#FF4444');
         var Zpos = new Joystick(new Point(XYpos.pos.x + 200, XYpos.pos.y), 80, "#33B5E5");
 
-        var dotA = new Path.Circle({
-            center: view.size/2,
-            radius: 50,
-            fillColor: '#AA66CC',
-            opacity: 0.5
+        var segLen = 200;
+
+        var bg = new Layer();
+
+        var shoulder = new Point(view.center.x, view.size.height/4);
+
+        var range = new Path.Circle({
+            center: shoulder,
+            layer: bg,
+            radius: 2*segLen,
+            fillColor: '#000',
+            opacity: 0.1,
         });
 
-        var dotB = new Path.Circle({
+        range.removeSegment(1);
+        range.segments[0].handleOut = [segLen,0];
+        range.segments[1].handleIn = [-segLen,0];
+
+        var dotA = new Path.Circle({
             center: view.size/2,
-            radius: 50,
-            fillColor: '#99CC00',
-            opacity: 0.5
+            radius: 10,
+            fillColor: '#AA66CC',
+            // opacity: 0.5
         });
 
         function onMouseDrag(event) {
@@ -120,8 +144,11 @@
             XYpos.frame(event.point);
             Zpos.frame(event.point);
 
-            dotA.position -= XYpos.getDelta()/5;
-            dotB.position -= Zpos.getDelta()/5;
+            if(range.contains(dotA.position - XYpos.getDelta()/5)) {
+                dotA.position -= XYpos.getDelta()/5;
+            } else {
+                dotA.position +=XYpos.getDelta()/1000;
+            }
         }
 
         </script>
