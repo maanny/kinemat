@@ -87,6 +87,19 @@ function Joystick(pos, radius, color) {
         xText.content = "x: " + this.getX();
         yText.content = "y: " + this.getY();
     };
+
+    this.keydown = function(key) {
+        switch(key) {
+            case 'w': this.setPt = new Point(this.pos.x, this.pos.y - this.radius / 2); break;
+            case 'a': this.setPt = new Point(this.pos.x - this.radius / 2, this.pos.y); break;
+            case 's': this.setPt = new Point(this.pos.x, this.pos.y + this.radius / 2); break;
+            case 'd': this.setPt = new Point(this.pos.x + this.radius / 2, this.pos.y);
+        }
+    }
+
+    this.keyup = function() {
+        this.setPt = this.pos;
+    }
 }
 
 //Imaginary javadoc:
@@ -124,13 +137,21 @@ function Arm(shoulder, reach, color) {
     range.segments[1].handleIn = [-this.reach,0];
 
     //Drawing changing graphical elements
-    var arm = new Path({
-        segments: [this.shoulder, this.elbow, this.wrist],
+    var bicep = new Path({
+        segments: [this.shoulder, this.elbow],
+        strokeColor: new Color(this.color) * 0.9,
+        strokeWidth: 50,
+        strokeJoin: 'round',
+        strokeCap: 'round'
+    })
+
+    var forearm = new Path({
+        segments: [this.elbow, this.wrist],
         strokeColor: this.color,
         strokeWidth: 50,
         strokeJoin: 'round',
         strokeCap: 'round'
-    });
+    })
 
     //Event handling workaround
 
@@ -142,7 +163,7 @@ function Arm(shoulder, reach, color) {
         }
 
         var elbows = shouldercirc.getIntersections(wristcirc);
-        console.log(elbows);
+
         switch(elbows.length) {
             case 2:
                 if(this.elbow.getDistance(elbows[0].point) < this.elbow.getDistance(elbows[1].point)) {
@@ -158,9 +179,10 @@ function Arm(shoulder, reach, color) {
                 break;
         }
 
-        arm.segments[0].point = this.shoulder;
-        arm.segments[1].point = this.elbow;
-        arm.segments[2].point = this.wrist;
+        bicep.segments[0].point = this.shoulder;
+        bicep.segments[1].point = this.elbow;
+        forearm.segments[0].point = this.elbow;
+        forearm.segments[1].point = this.wrist;
 
         wristcirc.position = this.wrist;
         shouldercirc.position = this.shoulder;
@@ -181,4 +203,12 @@ function onMouseUp(event) {
 function onFrame(event) {
     XYpos.frame(event.point);
     arm.frame(event.point, XYpos);
+}
+
+function onKeyDown(event) {
+	XYpos.keydown(event.key);
+}
+
+function onKeyUp(event) {
+	XYpos.keyup();
 }
