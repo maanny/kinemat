@@ -1,7 +1,7 @@
 //Imaginary javadoc:
-//param pos: a paper.js Point
-//param radius: a number (lol weak typing)
-//param color: a color idk lol
+//@param pos: a paper.js Point
+//@param radius: a number (lol weak typing)
+//@param color: a color idk lol
 function Joystick(pos, radius, color) {
     this.pos = pos;
     this.radius = radius;
@@ -89,90 +89,96 @@ function Joystick(pos, radius, color) {
     };
 }
 
+//Imaginary javadoc:
+//@param shoulder: a paper.js point that the base of the arm exists at
+//@param reach: a number defining the reach of the arm (2* the seglen)
+//@param color: the arm color
+function Arm(shoulder, reach, color) {
+    this.shoulder = shoulder;
+    this.elbow = new Point(this.shoulder.x, this.shoulder.y + reach/2);
+    this.wrist = new Point(this.shoulder.x, this.shoulder.y + reach);
+
+    this.reach = reach;
+    this.color = color;
+
+    //Instantiating geometry helpers
+    var shouldercirc = new Path.Circle(shoulder, this.reach/2);
+    var wristcirc = new Path.Circle(this.wrist, this.reach/2);
+
+    //Troubleshooting circles
+    // shouldercirc.strokeWeight = 3;
+    // wristcirc.strokeWeight = 3;
+    // shouldercirc.strokeColor = 'black';
+    // wristcirc.strokeColor = 'black';
+
+    //Drawing unchanging graphical elements
+    var range = new Path.Circle({
+        center: shoulder,
+        radius: reach,
+        fillColor: this.color,
+        opacity: 0.1,
+    });
+
+    range.removeSegment(1);
+    range.segments[0].handleOut = [this.reach,0];
+    range.segments[1].handleIn = [-this.reach,0];
+
+    //Drawing changing graphical elements
+    var arm = new Path({
+        segments: [this.shoulder, this.elbow, this.wrist],
+        strokeColor: this.color,
+        strokeWidth: 50,
+        strokeJoin: 'round',
+        strokeCap: 'round'
+    });
+
+    //Event handling workaround
+
+    this.frame = function(point, stick) {
+        if(range.contains(this.wrist - stick.getDelta()/5)) {
+            this.wrist -= stick.getDelta()/5;
+        } else {
+            this.wrist += stick.getDelta()/1000;
+        }
+
+        var elbows = shouldercirc.getIntersections(wristcirc);
+        console.log(elbows);
+        switch(elbows.length) {
+            case 2:
+                if(this.elbow.getDistance(elbows[0].point) < this.elbow.getDistance(elbows[1].point)) {
+                    this.elbow = elbows[0].point;
+                } else {
+                    this.elbow = elbows[1].point;
+                }
+                break;
+            case 1:
+                this.elbow = elbows[0].point;
+                break;
+            default:
+                break;
+        }
+
+        arm.segments[0].point = this.shoulder;
+        arm.segments[1].point = this.elbow;
+        arm.segments[2].point = this.wrist;
+
+        wristcirc.position = this.wrist;
+        shouldercirc.position = this.shoulder;
+    };
+}
+
 var XYpos = new Joystick(new Point(110, view.size.height - 110), 80, '#FF4444');
-var Zpos = new Joystick(new Point(view.size.width - 150, XYpos.pos.y), 80, "#33B5E5");
-
-var segLen = 200;
-
-var bg = new Layer();
-
-var shoulder = new Point(view.center.x, view.size.height/20);
-
-var range = new Path.Circle({
-    center: shoulder,
-    layer: bg,
-    radius: 2*segLen,
-    fillColor: '#000',
-    opacity: 0.1,
-});
-
-range.removeSegment(1);
-range.segments[0].handleOut = [segLen,0];
-range.segments[1].handleIn = [-segLen,0];
-
-var wrist = new Path.Circle({
-    center: range.bounds.center,
-    radius: 10,
-    fillColor: '#AA66CC',
-    // opacity: 0.5
-});
-
-var shoulderpt = new Path.Circle({
-    center: shoulder,
-    radius: 10,
-    fillColor: '#AA66CC',
-    // opacity: 0.5
-});
-
-var wristcirc = new Path.Circle({
-    center: wrist.position,
-    radius: segLen,
-    //fillColor: '#AAA66CC',
-    //opacity: 0.1,
-});
-
-var shouldercirc = new Path.Circle({
-    center: shoulderpt.position,
-    radius: segLen,
-    //fillColor: '#AAA66CC',
-    //opacity: 0.1
-});
-
-var arm = new Path({
-    segments: [shoulderpt.position, [0,0], wrist.position],
-    strokeColor: 'red',
-    strokeWidth: 30,
-    strokeJoin: 'round',
-    strokeCap: 'round'
-});
+var arm = new Arm(new Point(view.center.x, view.size.height/20), 500, "#FF4444");
 
 function onMouseDrag(event) {
     XYpos.drag(event.point);
-    Zpos.drag(event.point);
 }
 
 function onMouseUp(event) {
     XYpos.mouseUp(event.point);
-    Zpos.mouseUp(event.point);
 }
 
 function onFrame(event) {
     XYpos.frame(event.point);
-    Zpos.frame(event.point);
-
-    if(range.contains(wrist.position - XYpos.getDelta()/5)) {
-        wrist.position -= XYpos.getDelta()/5;
-    } else {
-        wrist.position +=XYpos.getDelta()/1000;
-    }
-
-    var elbows = shouldercirc.getIntersections(wristcirc);
-    var elbow = elbows[0].point;
-
-    arm.segments[0].point = shoulderpt.position;
-    arm.segments[1].point = elbow;
-    arm.segments[2].point = wrist.position;
-
-    wristcirc.position = wrist.position;
-    shouldercirc.position = shoulder;
+    arm.frame(event.point, XYpos);
 }
