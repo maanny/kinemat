@@ -110,7 +110,7 @@ range.removeSegment(1);
 range.segments[0].handleOut = [segLen,0];
 range.segments[1].handleIn = [-segLen,0];
 
-var dotA = new Path.Circle({
+var wrist = new Path.Circle({
     center: range.bounds.center,
     radius: 10,
     fillColor: '#AA66CC',
@@ -124,40 +124,27 @@ var shoulderpt = new Path.Circle({
     // opacity: 0.5
 });
 
-var midpoint = new Path.Circle({
-    radius: 10,
-    fillColor: '#AA66CC',
-    // opacity: 0.5
-});
-
 var wristcirc = new Path.Circle({
-    center: dotA.position,
+    center: wrist.position,
     radius: segLen,
-    fillColor: '#AAA66CC',
-    opacity: 0.1,
+    //fillColor: '#AAA66CC',
+    //opacity: 0.1,
 });
 
 var shouldercirc = new Path.Circle({
     center: shoulderpt.position,
     radius: segLen,
-    fillColor: '#AAA66CC',
-    opacity: 0.1,
+    //fillColor: '#AAA66CC',
+    //opacity: 0.1
 });
 
-function findElbow(shoulder, wrist, segLen) {
-    var h = wrist.x - shoulder.x;
-    var k = wrist.y - shoulder.y;
-    var mid = new Point(shoulder.x + h/2,shoulder.y + k/2);
-    var solution = new Point(mid);
-
-    var change = new Matrix();
-    change.reset();
-    change.translate(Math.sqrt(Math.pow(segLen,2) - Math.pow(mid.x,2) - Math.pow(mid.y,2)),0);
-    change.rotate(Math.atan2(h, k));
-    solution = solution.transform(change);
-    console.log(solution);
-    return solution;
-}
+var arm = new Path({
+    segments: [shoulderpt.position, [0,0], wrist.position],
+    strokeColor: 'red',
+    strokeWidth: 30,
+    strokeJoin: 'round',
+    strokeCap: 'round'
+});
 
 function onMouseDrag(event) {
     XYpos.drag(event.point);
@@ -173,13 +160,19 @@ function onFrame(event) {
     XYpos.frame(event.point);
     Zpos.frame(event.point);
 
-    if(range.contains(dotA.position - XYpos.getDelta()/5)) {
-        dotA.position -= XYpos.getDelta()/5;
+    if(range.contains(wrist.position - XYpos.getDelta()/5)) {
+        wrist.position -= XYpos.getDelta()/5;
     } else {
-        dotA.position +=XYpos.getDelta()/1000;
+        wrist.position +=XYpos.getDelta()/1000;
     }
 
-    midpoint.position = findElbow(shoulder, dotA.position, segLen);
-    wristcirc.position = dotA.position;
+    var elbows = shouldercirc.getIntersections(wristcirc);
+    var elbow = elbows[0].point;
+
+    arm.segments[0].point = shoulderpt.position;
+    arm.segments[1].point = elbow;
+    arm.segments[2].point = wrist.position;
+
+    wristcirc.position = wrist.position;
     shouldercirc.position = shoulder;
 }
