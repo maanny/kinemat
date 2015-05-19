@@ -117,6 +117,48 @@ var dotA = new Path.Circle({
     // opacity: 0.5
 });
 
+var shoulderpt = new Path.Circle({
+    center: shoulder,
+    radius: 10,
+    fillColor: '#AA66CC',
+    // opacity: 0.5
+});
+
+var midpoint = new Path.Circle({
+    radius: 10,
+    fillColor: '#AA66CC',
+    // opacity: 0.5
+});
+
+var wristcirc = new Path.Circle({
+    center: dotA.position,
+    radius: segLen,
+    fillColor: '#AAA66CC',
+    opacity: 0.1,
+});
+
+var shouldercirc = new Path.Circle({
+    center: shoulderpt.position,
+    radius: segLen,
+    fillColor: '#AAA66CC',
+    opacity: 0.1,
+});
+
+function findElbow(shoulder, wrist, segLen) {
+    var h = wrist.x - shoulder.x;
+    var k = wrist.y - shoulder.y;
+    var mid = new Point(shoulder.x + h/2,shoulder.y + k/2);
+    var solution = new Point(mid);
+
+    var change = new Matrix();
+    change.reset();
+    change.translate(Math.sqrt(Math.pow(segLen,2) - Math.pow(mid.x,2) - Math.pow(mid.y,2)),0);
+    change.rotate(Math.atan2(h, k));
+    solution = solution.transform(change);
+    console.log(solution);
+    return solution;
+}
+
 function onMouseDrag(event) {
     XYpos.drag(event.point);
     Zpos.drag(event.point);
@@ -136,4 +178,8 @@ function onFrame(event) {
     } else {
         dotA.position +=XYpos.getDelta()/1000;
     }
+
+    midpoint.position = findElbow(shoulder, dotA.position, segLen);
+    wristcirc.position = dotA.position;
+    shouldercirc.position = shoulder;
 }
