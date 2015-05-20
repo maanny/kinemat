@@ -157,7 +157,7 @@ function Arm(shoulder, reach, color) {
 
     this.frame = function(point, stick) {
         if(range.contains(this.wrist - stick.getDelta()/5)) {
-            this.wrist -= stick.getDelta()/5;
+            this.wrist -= stick.getDelta()/20;
         } else {
             this.wrist += stick.getDelta()/1000;
         }
@@ -189,11 +189,23 @@ function Arm(shoulder, reach, color) {
     };
 }
 
-var XYpos = new Joystick(new Point(110, view.size.height - 110), 80, '#FF4444');
-var arm = new Arm(new Point(view.center.x, view.size.height/20), 500, "#FF4444");
+var XYpos = new Joystick(new Point(110, view.size.height - 110), 70, '#FF4444');
+var top = new Layer();
+var arm = new Arm(new Point(view.center.x, view.size.height/20), 350, "#33B5E5");
+var bot = new Layer();
+top.bringToFront();
+
+var print;
+
+function onMouseDown(event) {
+	print = new Path();
+	print.strokeColor = '#FFBB33';
+    print.strokeWidth = 5;
+}
 
 function onMouseDrag(event) {
     XYpos.drag(event.point);
+    print.add(arm.wrist);
 }
 
 function onMouseUp(event) {
